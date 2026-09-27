@@ -1,0 +1,8 @@
+<library path="waypoint_navigation_panel">
+  <class
+    name="rsf_rviz_plugins/WaypointNavigation"
+    type="rsf_rviz_plugins::WaypointNavigationPanel"
+    base_class_type="rviz_common::Panel">
+    <description>Controls waypoint navigation through ROS services.</description>
+  </class>
+</library>
