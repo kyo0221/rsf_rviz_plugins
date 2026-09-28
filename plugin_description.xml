@@ -5,4 +5,9 @@
     base_class_type="rviz_common::Panel">
     <description>Controls waypoint navigation through ROS services.</description>
   </class>
+  <class name="rsf_rviz_plugins/DummyPedestrian"
+    type="rsf_rviz_plugins::DummyPedestrianTool"
+    base_class_type="rviz_common::Tool">
+    <description>Drag to spawn a pedestrian moving at 0.8 m/s. Right-click to clear all.</description>
+  </class>
 </library>

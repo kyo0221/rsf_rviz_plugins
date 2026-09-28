@@ -5,3 +5,4 @@ RViz plugins for the RSF robot. The waypoint panel calls
 
 Build this package in a ROS 2 Jazzy workspace together with
 `rsf_navigation_executor`.
+
