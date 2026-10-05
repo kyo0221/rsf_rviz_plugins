@@ -1,36 +1,24 @@
-#ifndef RSF_RVIZ_PLUGINS__WAYPOINT_NAVIGATION_PANEL_HPP_
-#define RSF_RVIZ_PLUGINS__WAYPOINT_NAVIGATION_PANEL_HPP_
+#pragma once
 
-#include <memory>
+#include <string>
 #include <QLabel>
-#include <QTimer>
-#include <QWidget>
-#include <rviz_common/panel.hpp>
+#include <QPushButton>
 #include <rclcpp/rclcpp.hpp>
+#include <rviz_common/panel.hpp>
 #include <std_srvs/srv/trigger.hpp>
 
 namespace rsf_rviz_plugins
 {
 class WaypointNavigationPanel : public rviz_common::Panel
 {
-  Q_OBJECT
-
 public:
   explicit WaypointNavigationPanel(QWidget * parent = nullptr);
-
-private Q_SLOTS:
-  void callStart();
-  void spinRos();
+  void onInitialize() override;
 
 private:
-  using Trigger = std_srvs::srv::Trigger;
+  QPushButton * button(const QString & label, const std::string & service);
 
   rclcpp::Node::SharedPtr node_;
-  rclcpp::Client<Trigger>::SharedPtr start_client_;
-  rclcpp::executors::SingleThreadedExecutor executor_;
-  QTimer * timer_;
   QLabel * status_;
 };
 }
-
-#endif

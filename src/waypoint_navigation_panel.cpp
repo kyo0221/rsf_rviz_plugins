@@ -1,57 +1,54 @@
 #include "rsf_rviz_plugins/waypoint_navigation_panel.hpp"
 
-#include <chrono>
-
+#include <QHBoxLayout>
 #include <QMetaObject>
-#include <QPushButton>
-#include <QString>
 #include <QVBoxLayout>
 #include <pluginlib/class_list_macros.hpp>
+#include <rviz_common/display_context.hpp>
 
 namespace rsf_rviz_plugins
 {
 WaypointNavigationPanel::WaypointNavigationPanel(QWidget * parent)
-: rviz_common::Panel(parent), timer_(new QTimer(this)), status_(new QLabel("Ready", this))
+: rviz_common::Panel(parent), status_(new QLabel("Ready", this))
 {
-  node_ = std::make_shared<rclcpp::Node>("waypoint_navigation_panel");
-  start_client_ = node_->create_client<Trigger>("/waypoint_navigator/start");
-  executor_.add_node(node_);
+}
 
+void WaypointNavigationPanel::onInitialize()
+{
+  node_ = getDisplayContext()->getRosNodeAbstraction().lock()->get_raw_node();
   auto * layout = new QVBoxLayout;
-  auto * start_button = new QPushButton("Start Waypoint Navigation", this);
-  layout->addWidget(start_button);
+  auto * step = new QHBoxLayout;
+  layout->addWidget(button("Start Waypoint Navigation", "start"));
+  layout->addWidget(button("Save Waypoint", "save_waypoint"));
+  step->addWidget(button("Prev Waypoint", "prev_waypoint"));
+  step->addWidget(button("Next Waypoint", "next_waypoint"));
+  layout->addLayout(step);
   layout->addWidget(status_);
   setLayout(layout);
-
-  connect(start_button, &QPushButton::clicked, this, &WaypointNavigationPanel::callStart);
-  connect(timer_, &QTimer::timeout, this, &WaypointNavigationPanel::spinRos);
-  timer_->start(20);
 }
 
-void WaypointNavigationPanel::callStart()
+QPushButton * WaypointNavigationPanel::button(const QString & label, const std::string & service)
 {
-  if (!start_client_->service_is_ready()) {
-    status_->setText("Start failed: service unavailable");
-    return;
-  }
-  status_->setText("Starting waypoint navigation...");
-  auto request = std::make_shared<Trigger::Request>();
-  start_client_->async_send_request(request,
-    [this](rclcpp::Client<Trigger>::SharedFuture future) {
-      const auto response = future.get();
-      QString result = QString::fromStdString(response->message);
-      if (result.isEmpty()) {
-        result = response->success ? "Started" : "Failed";
-      }
-      QMetaObject::invokeMethod(this, [this, result, success = response->success]() {
-        status_->setText(success ? result : "Start failed: " + result);
-      }, Qt::QueuedConnection);
-    });
-}
-
-void WaypointNavigationPanel::spinRos()
-{
-  executor_.spin_some(std::chrono::milliseconds(0));
+  using Trigger = std_srvs::srv::Trigger;
+  auto client = node_->create_client<Trigger>("/waypoint_navigator/" + service);
+  auto * button = new QPushButton(label, this);
+  connect(button, &QPushButton::clicked, this, [this, client, label]() {
+    if (!client->service_is_ready()) {
+      status_->setText(label + " failed: service unavailable");
+      return;
+    }
+    status_->setText(label + " requested...");
+    client->async_send_request(std::make_shared<Trigger::Request>(),
+      [this, label](rclcpp::Client<Trigger>::SharedFuture future) {
+        const auto response = future.get();
+        const auto message = QString::fromStdString(response->message);
+        const auto text = response->success ?
+          (message.isEmpty() ? label + " succeeded" : message) :
+          label + " failed" + (message.isEmpty() ? "" : ": " + message);
+        QMetaObject::invokeMethod(this, [this, text]() {status_->setText(text);}, Qt::QueuedConnection);
+      });
+  });
+  return button;
 }
 }
 

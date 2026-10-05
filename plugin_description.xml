@@ -1,4 +1,4 @@
-<library path="waypoint_navigation_panel">
+<library path="rsf_rviz_plugins">
   <class
     name="rsf_rviz_plugins/WaypointNavigation"
     type="rsf_rviz_plugins::WaypointNavigationPanel"
@@ -9,5 +9,30 @@
     type="rsf_rviz_plugins::DummyPedestrianTool"
     base_class_type="rviz_common::Tool">
     <description>Drag to spawn a pedestrian moving at 0.8 m/s. Right-click to clear all.</description>
+  </class>
+  <class name="rsf_rviz_plugins/DummyRobotTeam"
+    type="rsf_rviz_plugins::DummyRobotTeamTool"
+    base_class_type="rviz_common::Tool">
+    <description>Click on the waypoint route to spawn a robot (0.4-1.0 m/s) with 1-2 followers. Right-click to clear all.</description>
+  </class>
+  <class name="rsf_rviz_plugins/OdomType"
+    type="rsf_rviz_plugins::OdomTypeDisplay"
+    base_class_type="rviz_common::Display">
+    <description>Shows the RSF odom type and state at the top of the view.</description>
+  </class>
+  <class name="rsf_rviz_plugins/RsfStatus"
+    type="rsf_rviz_plugins::RsfStatusPanel"
+    base_class_type="rviz_common::Panel">
+    <description>Shows RSF odom/fix state, GNSS quality and device diagnostics.</description>
+  </class>
+  <class name="rsf_rviz_plugins/BirdEyeView"
+    type="rsf_rviz_plugins::BirdEyeViewTool"
+    base_class_type="rviz_common::Tool">
+    <description>Switches to a top-down view centered on the robot.</description>
+  </class>
+  <class name="rsf_rviz_plugins/ThirdPersonView"
+    type="rsf_rviz_plugins::ThirdPersonViewTool"
+    base_class_type="rviz_common::Tool">
+    <description>Switches to an orbit view following the robot.</description>
   </class>
 </library>
