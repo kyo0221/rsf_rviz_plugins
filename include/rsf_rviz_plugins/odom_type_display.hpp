@@ -48,6 +48,7 @@ private:
   Field type_;
   Field state_;
   std::string shown_;
+  int drawn_width_ = 0;
   Ogre::Overlay * overlay_ = nullptr;
   Ogre::PanelOverlayElement * panel_ = nullptr;
   Ogre::TexturePtr texture_;

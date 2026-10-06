@@ -83,6 +83,7 @@ void OdomTypeDisplay::onEnable()
 
 void OdomTypeDisplay::onDisable()
 {
+  odom_type_right = -1;
   type_.sub.reset();
   state_.sub.reset();
   overlay_->hide();
@@ -127,6 +128,7 @@ void OdomTypeDisplay::update(float, float)
     state = state_.text;
   }
   if (type.empty() && state.empty()) {
+    odom_type_right = -1;
     overlay_->hide();
     return;
   }
@@ -137,6 +139,7 @@ void OdomTypeDisplay::update(float, float)
     shown_ = type + "\n" + state;
     draw(type, state);
   }
+  odom_type_right = (viewport->getActualWidth() + drawn_width_) / 2;
   overlay_->show();
 }
 
@@ -161,6 +164,7 @@ void OdomTypeDisplay::draw(const std::string & type, const std::string & state)
   for (const auto & cell : cells) {
     width += painter.fontMetrics().horizontalAdvance(cell) + 40;
   }
+  drawn_width_ = width;
   int x = (kWidth - width) / 2;
   for (const auto & cell : cells) {
     const int w = painter.fontMetrics().horizontalAdvance(cell) + 40;

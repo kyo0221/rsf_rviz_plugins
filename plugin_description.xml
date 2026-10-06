@@ -20,6 +20,11 @@
     base_class_type="rviz_common::Display">
     <description>Shows the RSF odom type and state at the top of the view.</description>
   </class>
+  <class name="rsf_rviz_plugins/NavStatus"
+    type="rsf_rviz_plugins::NavStatusDisplay"
+    base_class_type="rviz_common::Display">
+    <description>Shows what nav2 is doing (running, recovery, stop waypoint, failure) next to the odom type.</description>
+  </class>
   <class name="rsf_rviz_plugins/RsfStatus"
     type="rsf_rviz_plugins::RsfStatusPanel"
     base_class_type="rviz_common::Panel">

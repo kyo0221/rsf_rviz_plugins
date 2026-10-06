@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <string>
 #include <QColor>
 
@@ -9,6 +10,7 @@ inline const QColor kGood(46, 204, 113);
 inline const QColor kWarn(241, 196, 15);
 inline const QColor kCaution(243, 156, 18);
 inline const QColor kBad(231, 76, 60);
+inline std::atomic<int> odom_type_right{-1};
 
 inline QColor stateColor(const std::string & text)
 {
