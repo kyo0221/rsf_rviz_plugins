@@ -91,7 +91,7 @@ void DummyRobotTeamTool::onPoseSet(double x, double y, double theta)
   }
   std::uniform_real_distribution<double> speed(0.4, 1.0);
   std::uniform_real_distribution<double> offset(-0.4, 0.4);
-  Team team{start, speed(rng_), {}, now()};
+  Team team{start, speed(rng_), {}, motionTime()};
   for (int i = std::uniform_int_distribution<int>(1, 2)(rng_); i > 0; --i) {
     team.offsets.push_back(offset(rng_));
   }

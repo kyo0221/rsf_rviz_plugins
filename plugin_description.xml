@@ -15,6 +15,16 @@
     base_class_type="rviz_common::Tool">
     <description>Click on the waypoint route to spawn a robot (0.4-1.0 m/s) with 1-2 followers. Right-click to clear all.</description>
   </class>
+  <class name="rsf_rviz_plugins/DummyStaticObstacle"
+    type="rsf_rviz_plugins::DummyStaticObstacleTool"
+    base_class_type="rviz_common::Tool">
+    <description>Drag to place a static 0.8 x 0.6 m box obstacle. Right-click to clear all.</description>
+  </class>
+  <class name="rsf_rviz_plugins/DummyPause"
+    type="rsf_rviz_plugins::DummyPauseTool"
+    base_class_type="rviz_common::Tool">
+    <description>Toggles pause/resume of all dummy pedestrians and robot teams.</description>
+  </class>
   <class name="rsf_rviz_plugins/OdomType"
     type="rsf_rviz_plugins::OdomTypeDisplay"
     base_class_type="rviz_common::Display">

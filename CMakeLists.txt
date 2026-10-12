@@ -24,8 +24,10 @@ add_library(${PROJECT_NAME} SHARED
   include/rsf_rviz_plugins/nav_status_display.hpp
   include/rsf_rviz_plugins/odom_type_display.hpp
   src/dummy_obstacle_tool.cpp
+  src/dummy_pause_tool.cpp
   src/dummy_pedestrian_tool.cpp
   src/dummy_robot_team_tool.cpp
+  src/dummy_static_obstacle_tool.cpp
   src/nav_status_display.cpp
   src/odom_type_display.cpp
   src/rsf_status_panel.cpp
@@ -41,5 +43,12 @@ target_link_libraries(${PROJECT_NAME} Qt5::Widgets yaml-cpp)
 
 pluginlib_export_plugin_description_file(rviz_common plugin_description.xml)
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib)
+
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+  ament_add_gtest(test_pause_clock test/test_pause_clock.cpp)
+  target_include_directories(test_pause_clock PRIVATE include)
+  ament_target_dependencies(test_pause_clock rclcpp)
+endif()
 
 ament_package()

@@ -7,6 +7,7 @@
 #include <rviz_default_plugins/tools/pose/pose_tool.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
+#include "rsf_rviz_plugins/pause_clock.hpp"
 
 namespace rsf_rviz_plugins
 {
@@ -16,6 +17,7 @@ public:
   DummyObstacleTool(const QString & name, const std::string & ns, char shortcut);
   void onInitialize() override;
   int processMouseEvent(rviz_common::ViewportMouseEvent & event) override;
+  static PauseClock & pauseClock();
 
 protected:
   struct Body
@@ -29,6 +31,7 @@ protected:
   virtual void clear() = 0;
   bool toMap(double & x, double & y, double & yaw);
   rclcpp::Time now();
+  rclcpp::Time motionTime();
   void publish();
 
   rclcpp::Node::SharedPtr node_;

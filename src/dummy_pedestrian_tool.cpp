@@ -13,7 +13,7 @@ DummyPedestrianTool::DummyPedestrianTool()
 void DummyPedestrianTool::onPoseSet(double x, double y, double theta)
 {
   if (toMap(x, y, theta)) {
-    pedestrians_.push_back({x, y, theta, now()});
+    pedestrians_.push_back({x, y, theta, motionTime()});
     publish();
   }
 }

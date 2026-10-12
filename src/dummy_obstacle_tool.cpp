@@ -94,20 +94,32 @@ bool DummyObstacleTool::toMap(double & x, double & y, double & yaw)
   return true;
 }
 
+PauseClock & DummyObstacleTool::pauseClock()
+{
+  static PauseClock clock;
+  return clock;
+}
+
 rclcpp::Time DummyObstacleTool::now()
 {
   const auto now = node_->now();
   if (now < last_time_) {
     clear();
+    pauseClock().reset(now);
   }
   last_time_ = now;
   return now;
 }
 
+rclcpp::Time DummyObstacleTool::motionTime()
+{
+  return pauseClock().motionTime(now());
+}
+
 void DummyObstacleTool::publish()
 {
   const auto stamp = now();
-  const auto list = bodies(stamp);
+  const auto list = bodies(pauseClock().motionTime(stamp));
 
   visualization_msgs::msg::MarkerArray markers;
   markers.markers.emplace_back().action = visualization_msgs::msg::Marker::DELETEALL;
