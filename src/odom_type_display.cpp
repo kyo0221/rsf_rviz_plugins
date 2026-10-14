@@ -134,11 +134,16 @@ void OdomTypeDisplay::update(float, float)
   }
   auto * viewport = rviz_rendering::RenderWindowOgreAdapter::getOgreViewport(
     context_->getViewManager()->getRenderPanel()->getRenderWindow());
-  const int bottom = top_overlay_bottom;
-  panel_->setPosition((viewport->getActualWidth() - kWidth) / 2, bottom + 8);
   if (type + "\n" + state != shown_) {
     shown_ = type + "\n" + state;
     draw(type, state);
+  }
+  const int left = speed_left;
+  if (left >= 0) {
+    panel_->setPosition(
+      left - 8 - drawn_width_ - (kWidth - drawn_width_) / 2, kTopRowCenter - kHeight / 2);
+  } else {
+    panel_->setPosition((viewport->getActualWidth() - kWidth) / 2, 8);
   }
   odom_type_right = (viewport->getActualWidth() + drawn_width_) / 2;
   overlay_->show();

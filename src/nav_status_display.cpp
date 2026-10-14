@@ -254,10 +254,14 @@ void NavStatusDisplay::update(float, float)
     draw(text, color);
   }
   const int right = odom_type_right;
-  const int bottom = top_overlay_bottom;
-  panel_->setPosition(
-    right >= 0 ? right + 8 : (static_cast<int>(viewport->getActualWidth()) - drawn_width_) / 2,
-    bottom + 8);
+  const int speed = speed_right;
+  if (speed >= 0) {
+    panel_->setPosition(speed + 8, kTopRowCenter - kHeight / 2);
+  } else {
+    panel_->setPosition(
+      right >= 0 ? right + 8 : (static_cast<int>(viewport->getActualWidth()) - drawn_width_) / 2,
+      8);
+  }
   overlay_->show();
 }
 

@@ -98,7 +98,8 @@ void CmdVelDisplay::onEnable()
 void CmdVelDisplay::onDisable()
 {
   sub_.reset();
-  top_overlay_bottom = 0;
+  speed_left = -1;
+  speed_right = -1;
   overlay_->hide();
 }
 
@@ -115,7 +116,8 @@ void CmdVelDisplay::update(float, float)
   {
     std::lock_guard<std::mutex> lock(mutex_);
     if (!received_) {
-      top_overlay_bottom = 0;
+      speed_left = -1;
+  speed_right = -1;
       overlay_->hide();
       return;
     }
@@ -131,8 +133,10 @@ void CmdVelDisplay::update(float, float)
   }
   auto * viewport = rviz_rendering::RenderWindowOgreAdapter::getOgreViewport(
     context_->getViewManager()->getRenderPanel()->getRenderWindow());
-  panel_->setPosition((static_cast<int>(viewport->getActualWidth()) - kWidth) / 2, kTop);
-  top_overlay_bottom = kTop + kHeight;
+  const int left = (static_cast<int>(viewport->getActualWidth()) - kWidth) / 2;
+  panel_->setPosition(left, kTop);
+  speed_left = left;
+  speed_right = left + kWidth;
   overlay_->show();
 }
 
