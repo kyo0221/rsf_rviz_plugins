@@ -127,7 +127,7 @@ void CmdVelDisplay::update(float, float)
     }
     speed = speed_;
   }
-  const QString value = QString::number(std::abs(speed) < 0.005 ? 0.0 : speed, 'f', 2);
+  const QString value = QString::number(std::abs(speed) < 0.05 ? 0.0 : speed, 'f', 1);
   const int side = std::max<int>(odom_type_width, nav_status_width);
   const int width = std::min(kWidth, std::max(kMinWidth, 2 * (kSpeedHalf + side + kPadding)));
   if (value != shown_ || width != drawn_width_) {
