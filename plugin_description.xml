@@ -38,7 +38,7 @@
   <class name="rsf_rviz_plugins/CmdVel"
     type="rsf_rviz_plugins::CmdVelDisplay"
     base_class_type="rviz_common::Display">
-    <description>Shows the commanded speed (m/s) in a circle at the bottom left of the view.</description>
+    <description>Shows the commanded speed (m/s) at the top of the view in the Autoware overlay style.</description>
   </class>
   <class name="rsf_rviz_plugins/RsfStatus"
     type="rsf_rviz_plugins::RsfStatusPanel"
