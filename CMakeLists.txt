@@ -19,11 +19,14 @@ find_package(yaml-cpp REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(action_msgs REQUIRED)
 find_package(tf2 REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 add_library(${PROJECT_NAME} SHARED
+  include/rsf_rviz_plugins/cmd_vel_display.hpp
   include/rsf_rviz_plugins/nav_status_display.hpp
   include/rsf_rviz_plugins/odom_type_display.hpp
+  src/cmd_vel_display.cpp
   src/dummy_obstacle_tool.cpp
   src/dummy_pause_tool.cpp
   src/dummy_pedestrian_tool.cpp
@@ -38,7 +41,7 @@ add_library(${PROJECT_NAME} SHARED
 target_include_directories(${PROJECT_NAME} PRIVATE include)
 ament_target_dependencies(${PROJECT_NAME}
   pluginlib rclcpp rviz_common rviz_rendering std_srvs rviz_default_plugins sensor_msgs visualization_msgs std_msgs
-  nmea_msgs diagnostic_msgs ament_index_cpp nav2_msgs action_msgs tf2
+  nmea_msgs diagnostic_msgs ament_index_cpp nav2_msgs action_msgs tf2 geometry_msgs
 )
 target_link_libraries(${PROJECT_NAME} Qt5::Widgets yaml-cpp)
 
