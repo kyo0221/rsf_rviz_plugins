@@ -166,6 +166,7 @@ void NavStatusDisplay::onDisable()
   log_sub_.reset();
   status_sub_.reset();
   speed_sub_.reset();
+  nav_status_width = 0;
   overlay_->hide();
 }
 
@@ -243,34 +244,47 @@ void NavStatusDisplay::update(float, float)
   QString text;
   QColor color;
   if (!compose(text, color)) {
+    nav_status_width = 0;
     overlay_->hide();
     return;
   }
   auto * viewport = rviz_rendering::RenderWindowOgreAdapter::getOgreViewport(
     context_->getViewManager()->getRenderPanel()->getRenderWindow());
-  const QString key = text + color.name();
+  const int center = speed_center;
+  const bool inline_row = center >= 0;
+  const QString key = (inline_row ? "i" : "b") + text + color.name();
   if (key != shown_) {
     shown_ = key;
-    draw(text, color);
+    draw(text, color, inline_row);
   }
   const int right = odom_type_right;
-  const int speed = speed_right;
-  if (speed >= 0) {
-    panel_->setPosition(speed + 8, kTopRowCenter - kHeight / 2);
+  if (inline_row) {
+    panel_->setPosition(center + kSpeedHalf, kTopRowCenter - kHeight / 2);
+    nav_status_width = drawn_width_;
   } else {
     panel_->setPosition(
       right >= 0 ? right + 8 : (static_cast<int>(viewport->getActualWidth()) - drawn_width_) / 2,
       8);
+    nav_status_width = 0;
   }
   overlay_->show();
 }
 
-void NavStatusDisplay::draw(const QString & text, const QColor & color)
+void NavStatusDisplay::draw(const QString & text, const QColor & color, bool inline_row)
 {
   QImage image(kWidth, kHeight, QImage::Format_ARGB32);
   image.fill(Qt::transparent);
   QPainter painter(&image);
   painter.setRenderHint(QPainter::Antialiasing);
+  if (inline_row) {
+    painter.setFont(QFont("Quicksand", 16, QFont::Bold));
+    drawn_width_ = std::min(kWidth, painter.fontMetrics().horizontalAdvance(text));
+    painter.setPen(color == kNeutral ? kPrimary : color);
+    painter.drawText(0, 0, drawn_width_, kHeight, Qt::AlignVCenter | Qt::AlignLeft, text);
+    texture_->getBuffer()->blitFromMemory(
+      Ogre::PixelBox(kWidth, kHeight, 1, Ogre::PF_A8R8G8B8, image.bits()));
+    return;
+  }
   QFont font("Roboto");
   font.setPixelSize(18);
   font.setBold(true);

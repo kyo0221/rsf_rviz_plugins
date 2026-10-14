@@ -1,5 +1,6 @@
 #include "rsf_rviz_plugins/odom_type_display.hpp"
 
+#include <algorithm>
 #include <vector>
 #include <QFont>
 #include <QImage>
@@ -84,6 +85,7 @@ void OdomTypeDisplay::onEnable()
 void OdomTypeDisplay::onDisable()
 {
   odom_type_right = -1;
+  odom_type_width = 0;
   type_.sub.reset();
   state_.sub.reset();
   overlay_->hide();
@@ -129,27 +131,31 @@ void OdomTypeDisplay::update(float, float)
   }
   if (type.empty() && state.empty()) {
     odom_type_right = -1;
+    odom_type_width = 0;
     overlay_->hide();
     return;
   }
   auto * viewport = rviz_rendering::RenderWindowOgreAdapter::getOgreViewport(
     context_->getViewManager()->getRenderPanel()->getRenderWindow());
-  if (type + "\n" + state != shown_) {
-    shown_ = type + "\n" + state;
-    draw(type, state);
+  const int center = speed_center;
+  const bool inline_row = center >= 0;
+  const std::string key = (inline_row ? "i" : "b") + type + "\n" + state;
+  if (key != shown_) {
+    shown_ = key;
+    draw(type, state, inline_row);
   }
-  const int left = speed_left;
-  if (left >= 0) {
-    panel_->setPosition(
-      left - 8 - drawn_width_ - (kWidth - drawn_width_) / 2, kTopRowCenter - kHeight / 2);
+  if (inline_row) {
+    panel_->setPosition(center - kSpeedHalf - drawn_width_, kTopRowCenter - kHeight / 2);
+    odom_type_width = drawn_width_;
   } else {
     panel_->setPosition((viewport->getActualWidth() - kWidth) / 2, 8);
+    odom_type_width = 0;
   }
   odom_type_right = (viewport->getActualWidth() + drawn_width_) / 2;
   overlay_->show();
 }
 
-void OdomTypeDisplay::draw(const std::string & type, const std::string & state)
+void OdomTypeDisplay::draw(const std::string & type, const std::string & state, bool inline_row)
 {
   QImage image(kWidth, kHeight, QImage::Format_ARGB32);
   image.fill(Qt::transparent);
@@ -165,6 +171,20 @@ void OdomTypeDisplay::draw(const std::string & type, const std::string & state)
     if (!text.empty()) {
       cells.push_back(QString::fromStdString(text));
     }
+  }
+  if (inline_row) {
+    painter.setFont(QFont("Quicksand", 16, QFont::Bold));
+    int x = 0;
+    for (const auto & cell : cells) {
+      const int w = painter.fontMetrics().horizontalAdvance(cell);
+      painter.setPen(stateColor(cell.toStdString()));
+      painter.drawText(x, 0, w, kHeight, Qt::AlignVCenter | Qt::AlignLeft, cell);
+      x += w + 16;
+    }
+    drawn_width_ = std::max(0, x - 16);
+    texture_->getBuffer()->blitFromMemory(
+      Ogre::PixelBox(kWidth, kHeight, 1, Ogre::PF_A8R8G8B8, image.bits()));
+    return;
   }
   int width = 8 * (static_cast<int>(cells.size()) - 1);
   for (const auto & cell : cells) {

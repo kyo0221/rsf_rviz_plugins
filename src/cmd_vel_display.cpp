@@ -1,5 +1,6 @@
 #include "rsf_rviz_plugins/cmd_vel_display.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <QFont>
 #include <QFontDatabase>
@@ -23,9 +24,11 @@ namespace rsf_rviz_plugins
 {
 namespace
 {
-constexpr int kWidth = 550;
+constexpr int kMinWidth = 550;
+constexpr int kWidth = 1600;
 constexpr int kHeight = 100;
 constexpr int kTop = 10;
+constexpr int kPadding = 40;
 constexpr auto kTimeout = std::chrono::seconds(1);
 }
 
@@ -76,7 +79,7 @@ void CmdVelDisplay::onInitialize()
   panel_->setMaterialName(name);
   overlay_ = manager.create(name);
   overlay_->add2D(panel_);
-  overlay_->setZOrder(500);
+  overlay_->setZOrder(400);
 }
 
 void CmdVelDisplay::onEnable()
@@ -98,8 +101,7 @@ void CmdVelDisplay::onEnable()
 void CmdVelDisplay::onDisable()
 {
   sub_.reset();
-  speed_left = -1;
-  speed_right = -1;
+  speed_center = -1;
   overlay_->hide();
 }
 
@@ -116,8 +118,7 @@ void CmdVelDisplay::update(float, float)
   {
     std::lock_guard<std::mutex> lock(mutex_);
     if (!received_) {
-      speed_left = -1;
-  speed_right = -1;
+      speed_center = -1;
       overlay_->hide();
       return;
     }
@@ -127,16 +128,18 @@ void CmdVelDisplay::update(float, float)
     speed = speed_;
   }
   const QString value = QString::number(std::abs(speed) < 0.005 ? 0.0 : speed, 'f', 2);
-  if (value != shown_) {
+  const int side = std::max<int>(odom_type_width, nav_status_width);
+  const int width = std::min(kWidth, std::max(kMinWidth, 2 * (kSpeedHalf + side + kPadding)));
+  if (value != shown_ || width != drawn_width_) {
     shown_ = value;
+    drawn_width_ = width;
     draw(value);
   }
   auto * viewport = rviz_rendering::RenderWindowOgreAdapter::getOgreViewport(
     context_->getViewManager()->getRenderPanel()->getRenderWindow());
-  const int left = (static_cast<int>(viewport->getActualWidth()) - kWidth) / 2;
-  panel_->setPosition(left, kTop);
-  speed_left = left;
-  speed_right = left + kWidth;
+  const int center = static_cast<int>(viewport->getActualWidth()) / 2;
+  panel_->setPosition(center - width / 2, kTop);
+  speed_center = center;
   overlay_->show();
 }
 
@@ -146,14 +149,14 @@ void CmdVelDisplay::draw(const QString & value)
   image.fill(Qt::transparent);
   QPainter painter(&image);
   painter.setRenderHint(QPainter::Antialiasing, true);
-  const QRectF background(0, 0, kWidth, kHeight);
+  const QRectF background(0, 0, drawn_width_, kHeight);
   QColor fill(0, 0, 0);
   fill.setAlphaF(0.3);
   painter.setPen(Qt::NoPen);
   painter.setBrush(fill);
   painter.drawRoundedRect(background, background.height() / 2, background.height() / 2);
 
-  const QColor color(174, 174, 174);
+  const QColor color = kPrimary;
   painter.setFont(QFont("Quicksand", 40));
   const QRect value_rect = painter.fontMetrics().boundingRect(value);
   painter.setPen(color);

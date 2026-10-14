@@ -41,7 +41,7 @@ private:
   };
 
   void subscribe(Field & field);
-  void draw(const std::string & type, const std::string & state);
+  void draw(const std::string & type, const std::string & state, bool inline_row);
 
   rclcpp::Node::SharedPtr node_;
   std::mutex mutex_;

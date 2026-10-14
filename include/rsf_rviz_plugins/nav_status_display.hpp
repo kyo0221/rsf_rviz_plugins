@@ -40,7 +40,7 @@ private Q_SLOTS:
 private:
   void onLog(const nav2_msgs::msg::BehaviorTreeLog & msg);
   bool compose(QString & text, QColor & color);
-  void draw(const QString & text, const QColor & color);
+  void draw(const QString & text, const QColor & color, bool inline_row);
 
   rclcpp::Node::SharedPtr node_;
   rviz_common::properties::RosTopicProperty * log_topic_;

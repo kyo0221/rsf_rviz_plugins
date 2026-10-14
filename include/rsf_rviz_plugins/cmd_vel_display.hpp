@@ -42,6 +42,7 @@ private:
   double speed_ = 0.0;
   std::chrono::steady_clock::time_point stamp_;
   QString shown_;
+  int drawn_width_ = 0;
   Ogre::Overlay * overlay_ = nullptr;
   Ogre::PanelOverlayElement * panel_ = nullptr;
   Ogre::TexturePtr texture_;
