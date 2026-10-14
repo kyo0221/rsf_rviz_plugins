@@ -18,6 +18,7 @@ find_package(ament_index_cpp REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(action_msgs REQUIRED)
+find_package(tf2 REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 add_library(${PROJECT_NAME} SHARED
@@ -37,7 +38,7 @@ add_library(${PROJECT_NAME} SHARED
 target_include_directories(${PROJECT_NAME} PRIVATE include)
 ament_target_dependencies(${PROJECT_NAME}
   pluginlib rclcpp rviz_common rviz_rendering std_srvs rviz_default_plugins sensor_msgs visualization_msgs std_msgs
-  nmea_msgs diagnostic_msgs ament_index_cpp nav2_msgs action_msgs
+  nmea_msgs diagnostic_msgs ament_index_cpp nav2_msgs action_msgs tf2
 )
 target_link_libraries(${PROJECT_NAME} Qt5::Widgets yaml-cpp)
 

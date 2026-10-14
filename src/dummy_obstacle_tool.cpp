@@ -5,6 +5,8 @@
 #include <limits>
 #include <rviz_common/display_context.hpp>
 #include <rviz_common/frame_manager_iface.hpp>
+#include <rviz_common/transformation/frame_transformer.hpp>
+#include <tf2/LinearMath/Transform.h>
 #include <rviz_common/ros_integration/ros_node_abstraction_iface.hpp>
 #include <rviz_common/viewport_mouse_event.hpp>
 
@@ -147,17 +149,21 @@ void DummyObstacleTool::publish()
   }
   marker_pub_->publish(markers);
 
-  Ogre::Vector3 map_origin, sensor_origin;
-  Ogre::Quaternion map_rotation, sensor_rotation;
-  if (!context_->getFrameManager()->getTransform(std::string("map"), map_origin, map_rotation) ||
-    !context_->getFrameManager()->getTransform(
-      std::string("rsf_hokuyo3d"), sensor_origin, sensor_rotation))
-  {
+  geometry_msgs::msg::TransformStamped map_to_sensor;
+  try {
+    map_to_sensor = context_->getFrameManager()->getTransformer()->lookupTransform(
+      "rsf_hokuyo3d", "map", tf2::TimePointZero);
+  } catch (const std::exception &) {
     return;
   }
+  const auto & t = map_to_sensor.transform;
+  const tf2::Transform to_sensor(
+    tf2::Quaternion(t.rotation.x, t.rotation.y, t.rotation.z, t.rotation.w),
+    tf2::Vector3(t.translation.x, t.translation.y, t.translation.z));
+  const rclcpp::Time scan_stamp(map_to_sensor.header.stamp, stamp.get_clock_type());
   sensor_msgs::msg::LaserScan scan;
   scan.header.frame_id = "rsf_hokuyo3d";
-  scan.header.stamp = stamp;
+  scan.header.stamp = scan_stamp;
   scan.angle_min = -M_PI;
   scan.angle_increment = 2.0 * M_PI / kRays;
   scan.angle_max = scan.angle_min + (kRays - 1) * scan.angle_increment;
@@ -166,15 +172,13 @@ void DummyObstacleTool::publish()
   scan.scan_time = 0.05;
   scan.ranges.assign(kRays, std::numeric_limits<float>::infinity());
 
-  const auto to_sensor = sensor_rotation.Inverse() * map_rotation;
-  const auto offset = sensor_rotation.Inverse() * (map_origin - sensor_origin);
-  for (const auto & body : list) {
-    const auto center = to_sensor * Ogre::Vector3(body.x, body.y, 0.0) + offset;
-    const auto heading = to_sensor * Ogre::Vector3(std::cos(body.yaw), std::sin(body.yaw), 0.0);
-    const double yaw = std::atan2(heading.y, heading.x);
+  for (const auto & body : bodies(pauseClock().motionTime(scan_stamp))) {
+    const auto center = to_sensor * tf2::Vector3(body.x, body.y, 0.0);
+    const auto heading = to_sensor.getBasis() * tf2::Vector3(std::cos(body.yaw), std::sin(body.yaw), 0.0);
+    const double yaw = std::atan2(heading.y(), heading.x());
     for (int i = 0; i < kRays; ++i) {
       const double range = hit(
-        body.box, body.half_length, body.half_width, center.x, center.y, yaw,
+        body.box, body.half_length, body.half_width, center.x(), center.y(), yaw,
         scan.angle_min + i * scan.angle_increment);
       if (range < scan.range_max && range < scan.ranges[i]) {
         scan.ranges[i] = range;
