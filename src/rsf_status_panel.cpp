@@ -19,10 +19,11 @@ const QColor kStale(127, 140, 141);
 
 const std::vector<std::string> kStringRows = {"Odom Type", "Odom State", "Fix Type", "Fix State"};
 const std::vector<std::string> kRows = {
-  "Odom Type", "Odom State", "Fix Type", "Fix State", "GNSS Quality", "Satellites", "HDOP",
-  "Position", "Device"};
+  "Localization", "Odom Type", "Odom State", "Fix Type", "Fix State", "GNSS Quality", "Satellites",
+  "HDOP", "Position", "Device"};
 
 const std::vector<std::pair<std::string, std::string>> kTopics = {
+  {"Localization Topic", "/rsf_filter/state"},
   {"Odom Type Topic", "/rsf/rsf_odom_type"},
   {"Odom State Topic", "/rsf/rsf_odom_state"},
   {"Fix Type Topic", "/rsf/rsf_fix_type"},
@@ -43,6 +44,23 @@ std::pair<std::string, QColor> gpsQuality(uint32_t qual)
     case 6: return {"6: Dead Reckoning", kBad};
     default: return {std::to_string(qual) + ": Other", kCaution};
   }
+}
+
+std::pair<std::string, QColor> localizationState(const std::string & state)
+{
+  if (state == "fix") {
+    return {"fix", kGood};
+  }
+  if (state == "mcl") {
+    return {"mcl (AMCL)", kWarn};
+  }
+  if (state == "dr") {
+    return {"dr (dead reckoning)", kCaution};
+  }
+  if (state == "init") {
+    return {"init (not ready)", kBad};
+  }
+  return {state, kCaution};
 }
 
 std::string format(const char * fmt, double a, double b = 0.0, double c = 0.0)
@@ -126,6 +144,13 @@ void RsfStatusPanel::subscribe()
   using std_msgs::msg::String;
   subs_.clear();
   const auto qos = rclcpp::SensorDataQoS();
+
+  subs_.push_back(node_->create_subscription<String>(
+    topics_.at("Localization Topic"), qos,
+    [this](String::ConstSharedPtr msg) {
+      const auto [text, color] = localizationState(msg->data);
+      set("Localization", text, color);
+    }));
 
   for (const auto & label : kStringRows) {
     subs_.push_back(node_->create_subscription<String>(
